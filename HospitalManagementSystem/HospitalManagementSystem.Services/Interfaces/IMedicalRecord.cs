@@ -8,6 +8,6 @@ namespace HospitalManagementSystem.Services.Interfaces
         List<MedicalRecordDto> AllMedicalRecordByPatientIds(int patientId);
         void DeleteMedicalRecord(int id, int userId);
         void UpdateMedicalRecord(UpdateMedicalRecord updateMedicalRecord, int userId);
-        List<MedicalRecordDto> GetAllMedicalRecord();
+        List<MedicalRecordDto> GetAllMedicalRecord(int userId);
     }
 }

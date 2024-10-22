@@ -29,6 +29,18 @@ namespace HospitaManagmentSystem.Mapper
             };
         }
 
+        public static GetDoctorDto ToDoctorDto(this Doctor doctor)
+        {
+            return new GetDoctorDto
+            {
+                FirstName = doctor.FirstName,
+                LastName = doctor.LastName,
+                UserName = doctor.User.UserName,
+                Age = doctor.Age,
+                Email = doctor.User.Email,
+                Specialization = doctor.Specialization.ToString()
+            };
+        }
      
     }
 }

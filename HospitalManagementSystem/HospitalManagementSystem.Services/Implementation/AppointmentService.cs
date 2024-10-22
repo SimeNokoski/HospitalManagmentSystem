@@ -58,12 +58,12 @@ namespace HospitalManagementSystem.Services.Implementation
             return patients.Select(x=>x.Patient.ToAllPatientDto()).ToList();
         }
 
-        public List<GetAppointmentsByDoctorId> AvailableAppointmentsByDoctorId(int userId)
+        public List<GetAppointmentsByDoctorId> AvailableAppointmentsByDoctorId(int doctorId)
         {
-            var doctor = _doctorRepository.GetAll().FirstOrDefault(x => x.UserId == userId);
+            var doctor = _doctorRepository.GetById(doctorId);
             if (doctor == null)
             {
-                throw new DoctorNotFoundException($"Doctor wih userId {userId} not found");
+                throw new DoctorNotFoundException($"Doctor wih id {doctorId} not found");
             }
             var appointmets = _appointmentsRepository.GetAll().Where(x => !x.Status && x.PatientId == null && x.DoctorId == doctor.Id).ToList();
             if (!appointmets.Any())
@@ -74,7 +74,7 @@ namespace HospitalManagementSystem.Services.Implementation
             return appointmets.Select(x => x.ToAppointmentDto()).ToList();
         }
 
-        public void BookAppointment(BookAppointmentDto bookAppointmentDto, int userId)
+        public void BookAppointment(BookCancelAppointmentDto bookAppointmentDto, int userId)
         {
             var patient = _patientsRepository.GetAll().FirstOrDefault(x => x.UserId == userId);
             if(patient == null)
@@ -96,14 +96,14 @@ namespace HospitalManagementSystem.Services.Implementation
             _appointmentsRepository.Update(appointment);
         }
 
-        public void CancelAppointment(PatientCancelAppointmentDto patientCancelAppointmentDto, int userId)
+        public void CancelAppointment(BookCancelAppointmentDto bookCancelAppointmentDto, int userId)
         {
             var patient = _patientsRepository.GetAll().FirstOrDefault(x => x.UserId == userId);
             if (patient == null)
             {
                 throw new PatientNotFoundException($"Patient with userid {userId} not found");
             }
-            var appointment = _appointmentsRepository.GetById(patientCancelAppointmentDto.AppointmentId);
+            var appointment = _appointmentsRepository.GetById(bookCancelAppointmentDto.AppointmentId);
             if (appointment == null)
             {
                 throw new AppointmentNotFoundException($"Appointment with id {appointment.Id} not found");

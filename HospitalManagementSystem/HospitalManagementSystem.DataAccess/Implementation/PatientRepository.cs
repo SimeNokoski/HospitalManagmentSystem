@@ -1,5 +1,6 @@
 ﻿using HospitalManagementSystem.DataAccess.Interfaces;
 using HospitalManagementSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace HospitalManagementSystem.DataAccess.Implementation
 {
@@ -24,12 +25,12 @@ namespace HospitalManagementSystem.DataAccess.Implementation
 
         public List<Patients> GetAll()
         {
-            return _context.Patients.ToList();
+            return _context.Patients.Include(x=>x.User).ToList();
         }
 
         public Patients GetById(int id)
         {
-            return _context.Patients.FirstOrDefault(x => x.Id == id);
+            return _context.Patients.Include(x=>x.User).FirstOrDefault(x => x.Id == id);
         }
 
         public void Update(Patients entity)

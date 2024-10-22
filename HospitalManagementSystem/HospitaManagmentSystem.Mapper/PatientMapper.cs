@@ -32,5 +32,17 @@ namespace HospitaManagmentSystem.Mapper
                 FullName = $"{patients.FirstName} {patients.LastName}"
             };
         }
+
+        public static GetPatients ToGetPatientDto(this Patients patients)
+        {
+            return new GetPatients
+            {
+                Id = patients.Id,
+                FullName = $"{patients.FirstName} {patients.LastName}",
+                Email = patients.User.Email,
+                Age = patients.Age,
+                UserName = patients.User.UserName
+            };
+        }
     }
 }
