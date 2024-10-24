@@ -1,6 +1,7 @@
 ﻿using HospitalManagementSystem.Domain.Enums;
 using HospitalManagementSystem.DTO.DoctorDtos;
-using HospitalManagementSystem.Services.Interfaces;
+using HospitalManagementSystem.Services.Services.Interfaces;
+using HospitalManagementSystem.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -23,16 +24,25 @@ namespace HospitalManagementSystem.Api.Controllers
         {
             try
             {
-                _doctor.CreateDoctor(doctorDto);
+                var userId = GetAuthorizedUserId();
+                _doctor.CreateDoctor(doctorDto,userId);
                 return Ok();
             }
-            catch (Exception)
+            catch(UnauthorizedAccessException ex)
             {
-                return StatusCode(500, "System error occurred, contact admin!");
+                return Forbid(ex.Message);
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
-        [HttpDelete("deleteDoctor/id"), Authorize(Roles = nameof(Role.SuperAdmin))]
+        [HttpDelete("deleteDoctor/{id}"), Authorize(Roles = nameof(Role.SuperAdmin))]
         public IActionResult DeleteDoctor(int id)
         {
             try
@@ -40,27 +50,105 @@ namespace HospitalManagementSystem.Api.Controllers
                 _doctor.DeleteDoctor(id);
                 return Ok();
             }
-            catch (Exception)
+            catch(UnauthorizedAccessException ex)
             {
-                return StatusCode(500, "System error occurred, contact admin!");
+                return Forbid(ex.Message);
+            }
+            catch(DoctorNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
 
         }
 
         [HttpPut("UpdateDoctor"), Authorize(Roles = nameof(Role.Doctor))]
-        public IActionResult UpdateDoctor(UpdateDoctorDto updateDoctorDto)
+        public IActionResult UpdateDoctor(DoctorDto doctorDto)
         {
             try
             {
                 var userId = GetAuthorizedUserId();
-                _doctor.UpdateDoctor(updateDoctorDto,userId);
+                _doctor.UpdateDoctor(doctorDto, userId);
                 return Ok();
             }
-            catch (Exception)
+            catch (DoctorNotFoundException ex)
             {
-                return StatusCode(500, "System error occurred, contact admin!");
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        [AllowAnonymous]
+        [HttpGet("GetAllDoctors")]
+        public IActionResult GetAllDoctors()
+        {
+            try
+            {
+                var userId = GetAuthorizedUserId();
+                var doctors = _doctor.GetAllDoctor(userId);
+                return Ok(doctors);
+            }
+            catch(DoctorNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("GetDoctorById/{id}")]
+        public IActionResult GetDoctorById(int id)
+        {
+            try
+            {
+                var userId = GetAuthorizedUserId();
+                var doctor = _doctor.GetDoctorById(userId,id);
+                return Ok(doctor);
+            }
+            catch (DoctorNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("GetDoctorsBySpecialization/{specialization}")]
+        public IActionResult GetDoctorsBySpecialization(string specialization)
+        {
+            try
+            {
+                var userId = GetAuthorizedUserId();
+                var doctors = _doctor.GetAllDoctorsBySpecialization(userId,specialization);
+                return Ok(doctors);
+            }
+            catch (DoctorNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+
         private int GetAuthorizedUserId()
         {
             if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?

@@ -1,5 +1,6 @@
-﻿using HospitalManagementSystem.DTO.MedicalRecordDtos;
-using HospitalManagementSystem.Services.Interfaces;
+﻿using HospitalManagementSystem.Domain.Enums;
+using HospitalManagementSystem.DTO.MedicalRecordDtos;
+using HospitalManagementSystem.Services.Services.Interfaces;
 using HospitalManagementSystem.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,7 @@ using System.Security.Claims;
 
 namespace HospitalManagementSystem.Api.Controllers
 {
-    [Authorize(Roles = "Doctor")]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class MedicalRecordController : ControllerBase
@@ -18,7 +19,7 @@ namespace HospitalManagementSystem.Api.Controllers
             _medicalRecord = medicalRecord;
         }
 
-        [HttpPost("createMedicalRecord")]
+        [HttpPost("createMedicalRecord"), Authorize(Roles = nameof(Role.Doctor))]
         public IActionResult CreateMedicalRecordForPatient(CreateMedicalRecordDto medicalRecordDto)
         {
             try
@@ -27,7 +28,15 @@ namespace HospitalManagementSystem.Api.Controllers
                 _medicalRecord.CreateMedicalRecordForPatient(medicalRecordDto, userId);
                 return StatusCode(201, "CreateMedicalRecord");
             }
-            catch (PatientNotFoundException ex)
+            catch (DoctorNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch(InvalidDataException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(PatientNotFoundException ex)
             {
                 return NotFound(ex.Message);
             }
@@ -37,7 +46,7 @@ namespace HospitalManagementSystem.Api.Controllers
             }
         }
 
-        [HttpGet("AllMedicalRecordByPatientById/id")]
+        [HttpGet("AllMedicalRecordByPatientById/{id}"), Authorize(Roles = nameof(Role.Doctor))]
        public IActionResult AllMedicalRecordByPatientId(int id)
         {
             try
@@ -49,27 +58,7 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
-            }
-
-        }
-
-        [HttpDelete("DeleteMedicalRecord/id")]
-        public IActionResult DeleteMedicalRecord(int id)
-        {
-            try
-            {
-                var userId = GetAuthorizedUserId();
-                _medicalRecord.DeleteMedicalRecord(id, userId);
-                return Ok();
-            }
-            catch(UnauthorizedAccessException ex)
-            {
-                return Forbid(ex.Message);
-            }
-            catch (MedicalRecordNotFoundException ex)
+            catch(MedicalRecordNotFoundException ex)
             {
                 return NotFound(ex.Message);
             }
@@ -80,7 +69,31 @@ namespace HospitalManagementSystem.Api.Controllers
 
         }
 
-        [HttpPut("UpdateMedicalRecord")]
+        [HttpDelete("DeleteMedicalRecord/id"), Authorize(Roles = nameof(Role.Doctor))]
+        public IActionResult DeleteMedicalRecord(int id)
+        {
+            try
+            {
+                var userId = GetAuthorizedUserId();
+                _medicalRecord.DeleteMedicalRecord(id, userId);
+                return Ok();
+            }
+            catch(DoctorNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (MedicalRecordNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+
+        }
+
+        [HttpPut("UpdateMedicalRecord"), Authorize(Roles = nameof(Role.Doctor))]
         public IActionResult UpdateMedicalRecord(UpdateMedicalRecord updateMedicalRecord)
         {
             try
@@ -89,9 +102,9 @@ namespace HospitalManagementSystem.Api.Controllers
                 _medicalRecord.UpdateMedicalRecord(updateMedicalRecord, userId);
                 return Ok();
             }
-            catch (UnauthorizedAccessException ex)
+            catch (DoctorNotFoundException ex)
             {
-                return Forbid(ex.Message);
+                return NotFound(ex.Message);
             }
             catch(MedicalRecordNotFoundException ex)
             {
@@ -101,19 +114,24 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "System error occurred, contact admin!");
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
-        [HttpGet("GetAllMedicalRecord")]
+        [HttpGet("GetAllMedicalRecord"), Authorize(Roles = nameof(Role.SuperAdmin))]
         public IActionResult GetAllMedicalRecord()
         {
             try
             {
-                var medicalRecords = _medicalRecord.GetAllMedicalRecord();
+                var userId = GetAuthorizedUserId();
+                var medicalRecords = _medicalRecord.GetAllMedicalRecord(userId);
                 return Ok(medicalRecords);
+            }
+            catch(MedicalRecordNotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception)
             {

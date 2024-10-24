@@ -1,6 +1,6 @@
 ﻿using HospitalManagementSystem.Domain.Enums;
 using HospitalManagementSystem.DTO.AppointmentsDtos;
-using HospitalManagementSystem.Services.Interfaces;
+using HospitalManagementSystem.Services.Services.Interfaces;
 using HospitalManagementSystem.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,7 +43,7 @@ namespace HospitalManagementSystem.Api.Controllers
         }
 
         [HttpPut("bookAppointment"), Authorize(Roles = nameof(Role.Patient))]
-        public IActionResult BookAppointment(BookAppointmentDto bookAppointmentDto)
+        public IActionResult BookAppointment(BookCancelAppointmentDto bookAppointmentDto)
         {
             try
             {
@@ -93,13 +93,12 @@ namespace HospitalManagementSystem.Api.Controllers
 
         }
 
-        [HttpGet("AvailableAppointmentsByDoctorId"), Authorize(Roles = nameof(Role.Doctor))]
-        public IActionResult AvailableAppointmentsByDoctorId()
+        [HttpGet("AvailableAppointmentsByDoctorId/{id}"), Authorize(Roles = nameof(Role.Patient))]
+        public IActionResult AvailableAppointmentsByDoctorId(int id)
         {
             try
             {
-                var userId = GetAuthorizedUserId();
-                var availableAppointments = _appointmentService.AvailableAppointmentsByDoctorId(userId);
+                var availableAppointments = _appointmentService.AvailableAppointmentsByDoctorId(id);
                 return Ok(availableAppointments);
             }
             catch (DoctorNotFoundException ex)
@@ -117,7 +116,7 @@ namespace HospitalManagementSystem.Api.Controllers
 
         }
 
-        [HttpDelete("deleteAppointment/id"), Authorize(Roles = nameof(Role.Doctor))]
+        [HttpDelete("deleteAppointment/{id}"), Authorize(Roles = nameof(Role.Doctor))]
         public IActionResult DeleteAppointment(int id)
         {
             try
@@ -144,13 +143,13 @@ namespace HospitalManagementSystem.Api.Controllers
             }
         }
 
-        [HttpPut("cancelAppointment")]
-        public IActionResult CancelAppointment(PatientCancelAppointmentDto patientCancelAppointmentDto)
+        [HttpPut("cancelAppointment"), Authorize(Roles = nameof(Role.Patient))]
+        public IActionResult CancelAppointment(BookCancelAppointmentDto bookCancelAppointmentDto)
         {
             try
             {
                 var patientId = GetAuthorizedUserId();
-                _appointmentService.CancelAppointment(patientCancelAppointmentDto, patientId);
+                _appointmentService.CancelAppointment(bookCancelAppointmentDto, patientId);
                 return Ok();
             }
             catch (PatientNotFoundException ex)
