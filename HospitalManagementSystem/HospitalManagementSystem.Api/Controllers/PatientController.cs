@@ -1,6 +1,6 @@
 ﻿using HospitalManagementSystem.Domain.Enums;
 using HospitalManagementSystem.DTO.PatientDtos;
-using HospitalManagementSystem.Services.Interfaces;
+using HospitalManagementSystem.Services.Services.Interfaces;
 using HospitalManagementSystem.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -85,8 +85,7 @@ namespace HospitalManagementSystem.Api.Controllers
         {
             try
             {
-                var userId = GetAuthorizedUserId();
-                _patientService.DeletePatient(userId, id);
+                _patientService.DeletePatient(id);
                 return Ok();
             }
             catch (PatientNotFoundException ex)

@@ -1,5 +1,5 @@
 ﻿using HospitalManagementSystem.DTO.UserDtos;
-using HospitalManagementSystem.Services.Interfaces;
+using HospitalManagementSystem.Services.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

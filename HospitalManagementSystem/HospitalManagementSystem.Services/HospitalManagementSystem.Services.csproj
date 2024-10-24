@@ -12,9 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HospitalManagementSystem.DataAccess\HospitalManagementSystem.DataAccess.csproj" />
-    <ProjectReference Include="..\HospitalManagementSystem.DTO\HospitalManagementSystem.DTO.csproj" />
-    <ProjectReference Include="..\HospitalManagementSystem.Shared\HospitalManagementSystem.Shared.csproj" />
-    <ProjectReference Include="..\HospitaManagmentSystem.Mapper\HospitaManagmentSystem.Mapper.csproj" />
   </ItemGroup>
 
 </Project>

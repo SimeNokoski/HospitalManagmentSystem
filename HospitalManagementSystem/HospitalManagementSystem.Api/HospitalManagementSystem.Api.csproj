@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HospitalManagementSystem.Helper\HospitalManagementSystem.Helper.csproj" />
     <ProjectReference Include="..\HospitalManagementSystem.Services\HospitalManagementSystem.Services.csproj" />
   </ItemGroup>
 

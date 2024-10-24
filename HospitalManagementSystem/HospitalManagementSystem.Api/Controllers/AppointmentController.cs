@@ -1,6 +1,6 @@
 ﻿using HospitalManagementSystem.Domain.Enums;
 using HospitalManagementSystem.DTO.AppointmentsDtos;
-using HospitalManagementSystem.Services.Interfaces;
+using HospitalManagementSystem.Services.Services.Interfaces;
 using HospitalManagementSystem.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

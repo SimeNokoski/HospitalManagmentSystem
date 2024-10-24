@@ -1,6 +1,6 @@
 ﻿using HospitalManagementSystem.Domain.Enums;
 using HospitalManagementSystem.DTO.DoctorDtos;
-using HospitalManagementSystem.Services.Interfaces;
+using HospitalManagementSystem.Services.Services.Interfaces;
 using HospitalManagementSystem.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -47,8 +47,7 @@ namespace HospitalManagementSystem.Api.Controllers
         {
             try
             {
-                var userId = GetAuthorizedUserId();
-                _doctor.DeleteDoctor(id,userId);
+                _doctor.DeleteDoctor(id);
                 return Ok();
             }
             catch(UnauthorizedAccessException ex)
@@ -59,9 +58,9 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "System error occurred, contact admin!");
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
 
         }
