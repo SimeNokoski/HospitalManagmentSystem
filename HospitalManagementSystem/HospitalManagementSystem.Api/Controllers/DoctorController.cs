@@ -36,10 +36,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
         }
 
         [HttpDelete("deleteDoctor/{id}"), Authorize(Roles = nameof(Role.SuperAdmin))]
@@ -50,17 +46,9 @@ namespace HospitalManagementSystem.Api.Controllers
                 _doctor.DeleteDoctor(id);
                 return Ok();
             }
-            catch(UnauthorizedAccessException ex)
-            {
-                return Forbid(ex.Message);
-            }
             catch(DoctorNotFoundException ex)
             {
                 return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
 
         }
@@ -82,10 +70,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
         }
 
         [AllowAnonymous]
@@ -102,10 +86,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
         }
 
         [AllowAnonymous]
@@ -115,16 +95,12 @@ namespace HospitalManagementSystem.Api.Controllers
             try
             {
                 var userId = GetAuthorizedUserId();
-                var doctor = _doctor.GetDoctorById(userId,id);
+                var doctor = _doctor.GetDoctorById(userId, id);
                 return Ok(doctor);
             }
             catch (DoctorNotFoundException ex)
             {
                 return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -141,10 +117,6 @@ namespace HospitalManagementSystem.Api.Controllers
             catch (DoctorNotFoundException ex)
             {
                 return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 

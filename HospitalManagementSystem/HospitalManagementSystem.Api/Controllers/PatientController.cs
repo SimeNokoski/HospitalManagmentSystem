@@ -32,10 +32,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
         }
 
         [HttpGet("GetPatientsById/{id}"), Authorize(Roles = nameof(Role.SuperAdmin))]
@@ -50,10 +46,6 @@ namespace HospitalManagementSystem.Api.Controllers
             catch (PatientNotFoundException ex)
             {
                 return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -74,10 +66,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
         }
 
         [HttpDelete("DeletePatient/{id}"), Authorize(Roles = nameof(Role.SuperAdmin))]
@@ -91,10 +79,6 @@ namespace HospitalManagementSystem.Api.Controllers
             catch (PatientNotFoundException ex)
             {
                 return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 

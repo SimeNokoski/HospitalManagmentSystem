@@ -36,10 +36,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
-            }
         }
 
         [HttpPut("bookAppointment"), Authorize(Roles = nameof(Role.Patient))]
@@ -63,10 +59,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
-            }
         }
 
         [HttpGet("GetAppointmentsByDoctorId"), Authorize(Roles = nameof(Role.Doctor))]
@@ -86,11 +78,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
-            }
-
         }
 
         [HttpGet("AvailableAppointmentsByDoctorId/{id}"), Authorize(Roles = nameof(Role.Patient))]
@@ -109,11 +96,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
-            }
-
         }
 
         [HttpDelete("deleteAppointment/{id}"), Authorize(Roles = nameof(Role.Doctor))]
@@ -136,10 +118,6 @@ namespace HospitalManagementSystem.Api.Controllers
             catch (UnauthorizedAccessException ex)
             {
                 return Forbid(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
             }
         }
 
@@ -164,11 +142,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return Forbid(ex.Message);
             }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
-            }
-
         }
 
         [HttpGet("allPatientByDoctor"), Authorize(Roles = nameof(Role.Doctor))]
@@ -187,10 +160,6 @@ namespace HospitalManagementSystem.Api.Controllers
             catch(PatientNotFoundException ex)
             {
                 return NotFound(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
             }
         }
         private int GetAuthorizedUserId()

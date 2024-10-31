@@ -40,10 +40,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
-            }
         }
 
         [HttpGet("AllMedicalRecordByPatientById/{id}"), Authorize(Roles = nameof(Role.Doctor))]
@@ -62,11 +58,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
-            }
-
         }
 
         [HttpDelete("DeleteMedicalRecord/id"), Authorize(Roles = nameof(Role.Doctor))]
@@ -86,11 +77,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-
         }
 
         [HttpPut("UpdateMedicalRecord"), Authorize(Roles = nameof(Role.Doctor))]
@@ -114,10 +100,6 @@ namespace HospitalManagementSystem.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
         }
 
         [HttpGet("GetAllMedicalRecord"), Authorize(Roles = nameof(Role.SuperAdmin))]
@@ -132,10 +114,6 @@ namespace HospitalManagementSystem.Api.Controllers
             catch(MedicalRecordNotFoundException ex)
             {
                 return NotFound(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
             }
         }
         private int GetAuthorizedUserId()

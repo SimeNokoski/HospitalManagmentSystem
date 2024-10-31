@@ -29,6 +29,11 @@ namespace HospitalManagementSystem.DataAccess.Implementation
             return _context.Doctors.Include(x=>x.User).ToList();
         }
 
+        public List<Doctor> GetAllActiveDoctor()
+        {
+            return _context.Doctors.Include(x=>x.User).Where(x=>x.IsActive).ToList();
+        }
+
         public Doctor GetById(int id)
         {
             return _context.Doctors.Include(x=>x.User).FirstOrDefault(x => x.Id == id);

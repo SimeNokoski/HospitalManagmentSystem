@@ -19,6 +19,7 @@ namespace HospitaManagmentSystem.Mapper
                 Age = doctorDto.Age,
                 FirstName = doctorDto.FirstName,
                 LastName = doctorDto.LastName,
+                IsActive = true,
                 User = new User
                 {
                     Email = doctorDto.Email,

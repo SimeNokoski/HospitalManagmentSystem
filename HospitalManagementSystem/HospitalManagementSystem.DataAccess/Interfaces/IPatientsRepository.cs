@@ -4,5 +4,6 @@ namespace HospitalManagementSystem.DataAccess.Interfaces
 {
     public interface IPatientsRepository : IRepository<Patients>
     {
+        List<Patients> GetAllActivePatients();
     }
 }

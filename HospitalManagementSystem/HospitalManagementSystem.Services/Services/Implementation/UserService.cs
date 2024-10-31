@@ -49,6 +49,15 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new Exception("User not found");
             }
+            if(userDb.Role == Domain.Enums.Role.Doctor && !userDb.Doctor.IsActive)
+            {
+                throw new Exception("You do not have login access");
+            }
+            
+            if(userDb.Role == Domain.Enums.Role.Patient && !userDb.Patients.IsActive)
+            {
+                throw new Exception("You do not have login access");
+            }
 
             //GENERATE JWT TOKEN
             JwtSecurityTokenHandler jwtSecurityTokenHandler = new JwtSecurityTokenHandler();

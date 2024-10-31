@@ -13,11 +13,13 @@ namespace HospitalManagementSystem.Services.Services.Implementation
     {
         private readonly IDoctorRepository _repository;
         private readonly IUserRepository _userRepository;
+        private readonly IAppointmentRepository _appointmentRepository;
 
-        public DoctorService(IDoctorRepository repository, IUserRepository userRepository)
+        public DoctorService(IDoctorRepository repository, IUserRepository userRepository, IAppointmentRepository appointmentRepository)
         {
             _repository = repository;
             _userRepository = userRepository;
+            _appointmentRepository = appointmentRepository;
         }
 
         public void CreateDoctor(DoctorDto doctorDto, int userId)
@@ -41,13 +43,22 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new DoctorNotFoundException($"Doctor with id {doctorId} not found");
             }
-            var user = _userRepository.GetAll().FirstOrDefault(x => x.Id == doctor.UserId);
-            if (user == null)
+            if(!doctor.IsActive)
             {
-                throw new Exception("user not found");
+                throw new Exception($"doctor with id {doctor.Id} is not active");
             }
-            _repository.Delete(doctor);
-            _userRepository.Delete(user);
+
+            doctor.IsActive = false;
+            _repository.Update(doctor);
+
+            var appointments = _appointmentRepository.GetAll().Where(x => x.DoctorId == doctorId);
+            foreach (var appointment in appointments)
+            {
+                if (appointment.DateTime > DateTime.UtcNow)
+                {
+                    _appointmentRepository.Delete(appointment);
+                }
+            }
         }
 
         public List<GetDoctorDto> GetAllDoctor(int userId)
@@ -57,7 +68,7 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new Exception($"user with id {userId} not found");
             }
-            var doctors = _repository.GetAll();
+            var doctors = _repository.GetAllActiveDoctor();
             if (!doctors.Any())
             {
                 throw new DoctorNotFoundException("no doctors have been added yet");
@@ -74,7 +85,7 @@ namespace HospitalManagementSystem.Services.Services.Implementation
                 throw new Exception($"user with id {userId} not found");
             }
 
-            var doctors = _repository.GetAll().Where(x => x.Specialization.ToString() == specialization);
+            var doctors = _repository.GetAllActiveDoctor().Where(x => x.Specialization.ToString() == specialization);
             if (!doctors.Any())
             {
                 throw new DoctorNotFoundException("a doctor with that specialization was not found");
@@ -87,14 +98,17 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             var user = _userRepository.GetById(userId);
             if (user == null)
             {
-                throw new Exception($"user with id {userId} not found");
+                throw new DoctorNotFoundException($"user with id {userId} not found");
             }
             var doctor = _repository.GetById(doctorId);
             if (doctor == null)
             {
                 throw new DoctorNotFoundException($"doctor with id {doctorId} not found");
             }
-
+            if (!doctor.IsActive)
+            {
+                throw new Exception($"doctor with id {doctor.Id} is not active");
+            }
             return doctor.ToDoctorDto();
         }
 

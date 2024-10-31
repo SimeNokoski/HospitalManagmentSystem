@@ -1,5 +1,6 @@
 ﻿using HospitalManagementSystem.DataAccess.Interfaces;
 using HospitalManagementSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace HospitalManagementSystem.DataAccess.Implementation
 {
@@ -41,7 +42,7 @@ namespace HospitalManagementSystem.DataAccess.Implementation
 
         public User LoginUser(string username, string hashedPassword)
         {
-            return _context.Users.FirstOrDefault(x => x.UserName.ToLower() == username.ToLower()
+            return _context.Users.Include(x=>x.Doctor).Include(x=>x.Patients).FirstOrDefault(x => x.UserName.ToLower() == username.ToLower()
             && x.Password == hashedPassword);
         }
 

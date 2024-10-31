@@ -1,8 +1,10 @@
 ﻿using HospitalManagementSystem.DataAccess.Interfaces;
+using HospitalManagementSystem.Domain.Models;
 using HospitalManagementSystem.DTO.PatientDtos;
 using HospitalManagementSystem.Services.Services.Interfaces;
 using HospitalManagementSystem.Shared;
 using HospitaManagmentSystem.Mapper;
+using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using XSystem.Security.Cryptography;
@@ -27,13 +29,12 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new PatientNotFoundException($"patient with id {id} not found");
             }
-            var user = _userRepository.GetAll().FirstOrDefault(x=>x.Id == patient.UserId);
-            if (user == null)
+           if(!patient.IsActive)
             {
-                throw new Exception("user not found");
+                throw new Exception($"patient with id {patient.Id} is not active");
             }
-            _patientsRepository.Delete(patient);
-            _userRepository.Delete(user);
+           patient.IsActive = false;
+           _patientsRepository.Update(patient);
         }
 
         public List<GetPatients> GetAllPatients(int userId)
@@ -44,7 +45,7 @@ namespace HospitalManagementSystem.Services.Services.Implementation
                 throw new Exception("user with id {userId} not found");
             }
 
-            var patients = _patientsRepository.GetAll();
+            var patients = _patientsRepository.GetAllActivePatients();
             if (!patients.Any())
             {
                 throw new PatientNotFoundException("no patients found in the database");
@@ -64,6 +65,10 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new PatientNotFoundException($"patient with id {id} not found");
             }
+            if(!patient.IsActive)
+            {
+                throw new Exception($"patient with id {patient.Id} is not active");
+            }
             return patient.ToGetPatientDto();
         }
 
@@ -75,7 +80,7 @@ namespace HospitalManagementSystem.Services.Services.Implementation
                 throw new PatientNotFoundException($"patient with userId {userId} not found");
             }
 
-            ValidateDoctor(patientDto);
+            ValidatePatient(patientDto);
 
             var user = _userRepository.GetById(userId);
 
@@ -95,7 +100,7 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             _userRepository.Update(user);
         }
 
-        private void ValidateDoctor(PatientDto patientDto)
+        private void ValidatePatient(PatientDto patientDto)
         {
             Regex lowercaseRegex = new Regex("[a-z]");
             Regex specialCharRegex = new Regex("[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]");

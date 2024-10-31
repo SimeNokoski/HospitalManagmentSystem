@@ -8,6 +8,7 @@ namespace HospitalManagementSystem.Domain.Models
         public string LastName { get; set; }
         public int Age { get; set; }
         public Specialization? Specialization { get; set; }
+        public bool IsActive { get; set; }
 
         public User User { get; set; }  
         public int UserId { get; set; }
