@@ -4,5 +4,6 @@ namespace HospitalManagementSystem.DataAccess.Interfaces
 {
     public interface IDoctorRepository : IRepository<Doctor>
     {
+        List<Doctor> GetAllActiveDoctor();
     }
 }

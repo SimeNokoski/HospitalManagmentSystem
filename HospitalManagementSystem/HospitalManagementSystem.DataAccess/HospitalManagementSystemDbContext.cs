@@ -64,8 +64,8 @@ namespace HospitalManagementSystem.DataAccess
             modelBuilder.Entity<User>()
                 .HasData(new User
                 {
-                   Id = 29,
-                   Email = "sime99@gmail.com",
+                   Id = 1,
+                   Email = "nokoski99@gmail.com",
                    Password = hashedPassword,
                    Role = Domain.Enums.Role.SuperAdmin,
                    UserName = "simeSuperAdmin"               

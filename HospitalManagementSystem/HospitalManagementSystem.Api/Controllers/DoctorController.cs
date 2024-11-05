@@ -1,6 +1,6 @@
 ﻿using HospitalManagementSystem.Domain.Enums;
 using HospitalManagementSystem.DTO.DoctorDtos;
-using HospitalManagementSystem.Services.Interfaces;
+using HospitalManagementSystem.Services.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -13,6 +13,7 @@ namespace HospitalManagementSystem.Api.Controllers
     public class DoctorController : ControllerBase
     {
         private readonly IDoctorService _doctor;
+
         public DoctorController(IDoctorService doctor)
         {
             _doctor = doctor;
@@ -21,46 +22,53 @@ namespace HospitalManagementSystem.Api.Controllers
         [HttpPost("createDoctor"), Authorize(Roles = nameof(Role.SuperAdmin))]
         public IActionResult AdddDoctor(DoctorDto doctorDto)
         {
-            try
-            {
-                _doctor.CreateDoctor(doctorDto);
-                return Ok();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
-            }
+            var userId = GetAuthorizedUserId();
+            _doctor.CreateDoctor(doctorDto, userId);
+            return Ok();
         }
 
-        [HttpDelete("deleteDoctor/id"), Authorize(Roles = nameof(Role.SuperAdmin))]
+        [HttpDelete("deleteDoctor/{id}"), Authorize(Roles = nameof(Role.SuperAdmin))]
         public IActionResult DeleteDoctor(int id)
         {
-            try
-            {
-                _doctor.DeleteDoctor(id);
-                return Ok();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
-            }
-
+            _doctor.DeleteDoctor(id);
+            return Ok();
         }
 
         [HttpPut("UpdateDoctor"), Authorize(Roles = nameof(Role.Doctor))]
-        public IActionResult UpdateDoctor(UpdateDoctorDto updateDoctorDto)
+        public IActionResult UpdateDoctor(DoctorDto doctorDto)
         {
-            try
-            {
-                var userId = GetAuthorizedUserId();
-                _doctor.UpdateDoctor(updateDoctorDto,userId);
-                return Ok();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "System error occurred, contact admin!");
-            }
+            var userId = GetAuthorizedUserId();
+            _doctor.UpdateDoctor(doctorDto, userId);
+            return Ok();
         }
+
+        [AllowAnonymous]
+        [HttpGet("GetAllDoctors")]
+        public IActionResult GetAllDoctors()
+        {
+            var userId = GetAuthorizedUserId();
+            var doctors = _doctor.GetAllDoctor(userId);
+            return Ok(doctors);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("GetDoctorById/{id}")]
+        public IActionResult GetDoctorById(int id)
+        {
+            var userId = GetAuthorizedUserId();
+            var doctor = _doctor.GetDoctorById(userId, id);
+            return Ok(doctor);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("GetDoctorsBySpecialization/{specialization}")]
+        public IActionResult GetDoctorsBySpecialization(string specialization)
+        {
+            var userId = GetAuthorizedUserId();
+            var doctors = _doctor.GetAllDoctorsBySpecialization(userId, specialization);
+            return Ok(doctors);
+        }
+
         private int GetAuthorizedUserId()
         {
             if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?

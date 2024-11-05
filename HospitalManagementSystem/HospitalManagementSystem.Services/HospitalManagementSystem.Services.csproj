@@ -7,14 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="XAct.Core.PCL" Version="0.0.5014" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\HospitalManagementSystem.DataAccess\HospitalManagementSystem.DataAccess.csproj" />
-    <ProjectReference Include="..\HospitalManagementSystem.DTO\HospitalManagementSystem.DTO.csproj" />
-    <ProjectReference Include="..\HospitalManagementSystem.Shared\HospitalManagementSystem.Shared.csproj" />
-    <ProjectReference Include="..\HospitaManagmentSystem.Mapper\HospitaManagmentSystem.Mapper.csproj" />
   </ItemGroup>
 
 </Project>

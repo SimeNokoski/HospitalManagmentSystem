@@ -1,8 +1,9 @@
+using HospitalManagementSystem.Api.Middlewares;
 using HospitalManagementSystem.Helper;
-using Microsoft.OpenApi.Models;
-
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Text;
 
 namespace HospitalManagementSystem.Api
@@ -22,7 +23,7 @@ namespace HospitalManagementSystem.Api
             {
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n 
+                    Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n
                           Enter 'Bearer' [space] and then your token in the text input below.
                           \r\n\r\nExample: 'Bearer 12345abcdef'",
                     Name = "Authorization",
@@ -44,19 +45,18 @@ namespace HospitalManagementSystem.Api
                               Scheme = "oauth2",
                               Name = "Bearer",
                               In = ParameterLocation.Header,
-
                             },
                             new List<string>()
                           }
                         });
             });
 
-
             var cs = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.InjectDbContext(cs);
             builder.Services.InjectRepository();
             builder.Services.InjectService();
 
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             builder.Services.AddAuthentication(x =>
             {
@@ -81,7 +81,7 @@ namespace HospitalManagementSystem.Api
                 };
             });
 
-
+            builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(builder.Configuration));
 
             var app = builder.Build();
 
@@ -93,6 +93,8 @@ namespace HospitalManagementSystem.Api
             }
 
             app.UseHttpsRedirection();
+            app.UseMiddleware<RequestResponsLogMiddleware>();
+            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseAuthentication();
             app.UseAuthorization();
