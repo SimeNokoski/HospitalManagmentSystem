@@ -1,10 +1,8 @@
-﻿using HospitalManagementSystem.DataAccess.Interfaces;
-using HospitalManagementSystem.Domain.Models;
+﻿using AutoMapper;
+using HospitalManagementSystem.DataAccess.Interfaces;
 using HospitalManagementSystem.DTO.PatientDtos;
 using HospitalManagementSystem.Services.Services.Interfaces;
 using HospitalManagementSystem.Shared;
-using HospitaManagmentSystem.Mapper;
-using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using XSystem.Security.Cryptography;
@@ -15,11 +13,13 @@ namespace HospitalManagementSystem.Services.Services.Implementation
     {
         private readonly IPatientsRepository _patientsRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
 
-        public PatientService(IPatientsRepository patientsRepository, IUserRepository userRepository)
+        public PatientService(IPatientsRepository patientsRepository, IUserRepository userRepository, IMapper mapper)
         {
             _patientsRepository = patientsRepository;
             _userRepository = userRepository;
+            _mapper = mapper;
         }
 
         public void DeletePatient(int id)
@@ -29,12 +29,12 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new PatientNotFoundException($"patient with id {id} not found");
             }
-           if(!patient.IsActive)
+            if (!patient.IsActive)
             {
                 throw new Exception($"patient with id {patient.Id} is not active");
             }
-           patient.IsActive = false;
-           _patientsRepository.Update(patient);
+            patient.IsActive = false;
+            _patientsRepository.Update(patient);
         }
 
         public List<GetPatients> GetAllPatients(int userId)
@@ -50,7 +50,8 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new PatientNotFoundException("no patients found in the database");
             }
-            return patients.Select(x => x.ToGetPatientDto()).ToList();
+
+            return _mapper.Map<List<GetPatients>>(patients);
         }
 
         public GetPatients GetPatientById(int userId, int id)
@@ -65,11 +66,12 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new PatientNotFoundException($"patient with id {id} not found");
             }
-            if(!patient.IsActive)
+            if (!patient.IsActive)
             {
                 throw new Exception($"patient with id {patient.Id} is not active");
             }
-            return patient.ToGetPatientDto();
+
+            return _mapper.Map<GetPatients>(patient);
         }
 
         public void UpdatePatient(int userId, PatientDto patientDto)

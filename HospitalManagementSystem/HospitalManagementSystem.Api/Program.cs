@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using Serilog.Events;
 using System.Text;
 
 namespace HospitalManagementSystem.Api
@@ -57,6 +56,8 @@ namespace HospitalManagementSystem.Api
             builder.Services.InjectRepository();
             builder.Services.InjectService();
 
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
             builder.Services.AddAuthentication(x =>
             {
                 //we will use JWT authentication
@@ -80,15 +81,7 @@ namespace HospitalManagementSystem.Api
                 };
             });
 
-            Log.Logger = new LoggerConfiguration()
-           .Enrich.FromLogContext()
-           .MinimumLevel.Information()
-           .WriteTo.File(
-               $@"{AppDomain.CurrentDomain.BaseDirectory}Logs\HospitalSystem_LOG_{DateTime.Now.Date:dd-MM-yyyy}.txt",
-               LogEventLevel.Information,
-               "{NewLine}{Timestamp:HH:mm:ss} [{Level}] ({CorrelationToken}) {Message}{NewLine}{Exception}")
-           .CreateLogger();
-            builder.Host.UseSerilog();
+            builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(builder.Configuration));
 
             var app = builder.Build();
 
@@ -100,9 +93,8 @@ namespace HospitalManagementSystem.Api
             }
 
             app.UseHttpsRedirection();
-             app.UseMiddleware<RequestResponsLogMiddleware>();
+            app.UseMiddleware<RequestResponsLogMiddleware>();
             app.UseMiddleware<ExceptionMiddleware>();
-
 
             app.UseAuthentication();
             app.UseAuthorization();

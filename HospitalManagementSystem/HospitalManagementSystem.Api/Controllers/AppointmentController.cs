@@ -1,7 +1,6 @@
 ﻿using HospitalManagementSystem.Domain.Enums;
 using HospitalManagementSystem.DTO.AppointmentsDtos;
 using HospitalManagementSystem.Services.Services.Interfaces;
-using HospitalManagementSystem.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -14,6 +13,7 @@ namespace HospitalManagementSystem.Api.Controllers
     public class AppointmentController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
+
         public AppointmentController(IAppointmentService appointmentService)
         {
             _appointmentService = appointmentService;
@@ -22,146 +22,58 @@ namespace HospitalManagementSystem.Api.Controllers
         [HttpPost("createAppointment"), Authorize(Roles = nameof(Role.Doctor))]
         public IActionResult CreateAppointment(CreateAppointmentDto createAppointmentDto)
         {
-            try
-            {
-                var doctorId = GetAuthorizedUserId();
-                _appointmentService.AddAvailableAppointment(createAppointmentDto, doctorId);
-                return Ok();
-            }
-            catch(DoctorNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch(InvalidDataException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var doctorId = GetAuthorizedUserId();
+            _appointmentService.AddAvailableAppointment(createAppointmentDto, doctorId);
+            return Ok();
         }
 
         [HttpPut("bookAppointment"), Authorize(Roles = nameof(Role.Patient))]
         public IActionResult BookAppointment(BookCancelAppointmentDto bookAppointmentDto)
         {
-            try
-            {
-                var patientId = GetAuthorizedUserId();
-                _appointmentService.BookAppointment(bookAppointmentDto, patientId);
-                return Ok();
-            }
-            catch (PatientNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch(AppointmentNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var patientId = GetAuthorizedUserId();
+            _appointmentService.BookAppointment(bookAppointmentDto, patientId);
+            return Ok();
         }
 
         [HttpGet("GetAppointmentsByDoctorId"), Authorize(Roles = nameof(Role.Doctor))]
         public IActionResult GetAppointmentsByDoctorId()
         {
-            try
-            {
-                var doctorId = GetAuthorizedUserId();
-                var appointments = _appointmentService.GetAppointmentsByDoctorId(doctorId);
-                return Ok(appointments);
-            }
-            catch (DoctorNotFoundException ex)
-            {
-               return NotFound(ex.Message);
-            }
-            catch (AppointmentNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            var doctorId = GetAuthorizedUserId();
+            var appointments = _appointmentService.GetAppointmentsByDoctorId(doctorId);
+            return Ok(appointments);
         }
 
         [HttpGet("AvailableAppointmentsByDoctorId/{id}"), Authorize(Roles = nameof(Role.Patient))]
         public IActionResult AvailableAppointmentsByDoctorId(int id)
         {
-            try
-            {
-                var availableAppointments = _appointmentService.AvailableAppointmentsByDoctorId(id);
-                return Ok(availableAppointments);
-            }
-            catch (DoctorNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch(AppointmentNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            var availableAppointments = _appointmentService.AvailableAppointmentsByDoctorId(id);
+            return Ok(availableAppointments);
         }
 
         [HttpDelete("deleteAppointment/{id}"), Authorize(Roles = nameof(Role.Doctor))]
         public IActionResult DeleteAppointment(int id)
         {
-            try
-            {
-                var userId = GetAuthorizedUserId();
-                _appointmentService.RemoveAppointment(id, userId);
-                return Ok();
-            }
-            catch (DoctorNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (AppointmentNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Forbid(ex.Message);
-            }
+            var userId = GetAuthorizedUserId();
+            _appointmentService.RemoveAppointment(id, userId);
+            return Ok();
         }
 
         [HttpPut("cancelAppointment"), Authorize(Roles = nameof(Role.Patient))]
         public IActionResult CancelAppointment(BookCancelAppointmentDto bookCancelAppointmentDto)
         {
-            try
-            {
-                var patientId = GetAuthorizedUserId();
-                _appointmentService.CancelAppointment(bookCancelAppointmentDto, patientId);
-                return Ok();
-            }
-            catch (PatientNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (AppointmentNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Forbid(ex.Message);
-            }
+            var patientId = GetAuthorizedUserId();
+            _appointmentService.CancelAppointment(bookCancelAppointmentDto, patientId);
+            return Ok();
         }
 
         [HttpGet("allPatientByDoctor"), Authorize(Roles = nameof(Role.Doctor))]
         public IActionResult AllPatientByDoctorId()
         {
-            try
-            {
-                var doctorId = GetAuthorizedUserId();
-                var allpatient = _appointmentService.AllPatientByDoctorId(doctorId);
-                return Ok(allpatient);
-            }
-            catch (DoctorNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch(PatientNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            var doctorId = GetAuthorizedUserId();
+            var allpatient = _appointmentService.AllPatientByDoctorId(doctorId);
+            return Ok(allpatient);
         }
+
         private int GetAuthorizedUserId()
         {
             if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?

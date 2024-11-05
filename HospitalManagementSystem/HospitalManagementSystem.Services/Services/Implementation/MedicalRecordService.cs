@@ -1,8 +1,9 @@
-﻿using HospitalManagementSystem.DataAccess.Interfaces;
+﻿using AutoMapper;
+using HospitalManagementSystem.DataAccess.Interfaces;
+using HospitalManagementSystem.Domain.Models;
 using HospitalManagementSystem.DTO.MedicalRecordDtos;
 using HospitalManagementSystem.Services.Services.Interfaces;
 using HospitalManagementSystem.Shared;
-using HospitaManagmentSystem.Mapper;
 
 namespace HospitalManagementSystem.Services.Services.Implementation
 {
@@ -12,13 +13,15 @@ namespace HospitalManagementSystem.Services.Services.Implementation
         private readonly IDoctorRepository _doctorRepository;
         private readonly IPatientsRepository _petientsRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
 
-        public MedicalRecordService(IMedicalRecordRepository medicalRecordRepository, IDoctorRepository doctorRepository, IPatientsRepository petientsRepository, IUserRepository userRepository)
+        public MedicalRecordService(IMedicalRecordRepository medicalRecordRepository, IDoctorRepository doctorRepository, IPatientsRepository petientsRepository, IUserRepository userRepository, IMapper mapper)
         {
             _medicalRecordRepository = medicalRecordRepository;
             _doctorRepository = doctorRepository;
             _petientsRepository = petientsRepository;
             _userRepository = userRepository;
+            _mapper = mapper;
         }
 
         public List<MedicalRecordDto> AllMedicalRecordByPatientIds(int patientId)
@@ -33,7 +36,8 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new MedicalRecordNotFoundException("there is no medical record for that patient");
             }
-            return medicalRecords.Select(x => x.ToMedicalRecord()).ToList();
+
+            return _mapper.Map<List<MedicalRecordDto>>(medicalRecords);
         }
 
         public void CreateMedicalRecordForPatient(CreateMedicalRecordDto medicalRecordDto, int userId)
@@ -61,7 +65,7 @@ namespace HospitalManagementSystem.Services.Services.Implementation
                 throw new PatientNotFoundException($"patient with id {medicalRecordDto.PatientId} not found");
             }
 
-            var medicalReocord = medicalRecordDto.ToMedicalRecord();
+            var medicalReocord = _mapper.Map<MedicalRecord>(medicalRecordDto);
             medicalReocord.DoctorId = doctor.Id;
             _medicalRecordRepository.Add(medicalReocord);
         }
@@ -98,7 +102,8 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new MedicalRecordNotFoundException("no medical records");
             }
-            return medicalRecords.Select(x => x.ToMedicalRecord()).ToList();
+
+            return _mapper.Map<List<MedicalRecordDto>>(medicalRecords);
         }
 
         public void UpdateMedicalRecord(UpdateMedicalRecord updateMedicalRecord, int userId)

@@ -1,8 +1,9 @@
-﻿using HospitalManagementSystem.DataAccess.Interfaces;
+﻿using AutoMapper;
+using HospitalManagementSystem.DataAccess.Interfaces;
+using HospitalManagementSystem.Domain.Models;
 using HospitalManagementSystem.DTO.DoctorDtos;
 using HospitalManagementSystem.Services.Services.Interfaces;
 using HospitalManagementSystem.Shared;
-using HospitaManagmentSystem.Mapper;
 using System.Text;
 using System.Text.RegularExpressions;
 using XSystem.Security.Cryptography;
@@ -14,12 +15,14 @@ namespace HospitalManagementSystem.Services.Services.Implementation
         private readonly IDoctorRepository _repository;
         private readonly IUserRepository _userRepository;
         private readonly IAppointmentRepository _appointmentRepository;
+        private readonly IMapper _mapper;
 
-        public DoctorService(IDoctorRepository repository, IUserRepository userRepository, IAppointmentRepository appointmentRepository)
+        public DoctorService(IDoctorRepository repository, IUserRepository userRepository, IAppointmentRepository appointmentRepository, IMapper mapper)
         {
             _repository = repository;
             _userRepository = userRepository;
             _appointmentRepository = appointmentRepository;
+            _mapper = mapper;
         }
 
         public void CreateDoctor(DoctorDto doctorDto, int userId)
@@ -32,7 +35,13 @@ namespace HospitalManagementSystem.Services.Services.Implementation
 
             ValidateDoctor(doctorDto);
 
-            var doctor = doctorDto.ToDoctor();
+            var doctor = _mapper.Map<Doctor>(doctorDto);
+
+            var md5 = new MD5CryptoServiceProvider();
+            var md5data = md5.ComputeHash(Encoding.ASCII.GetBytes(doctorDto.Password));
+            var hashedPassword = Encoding.ASCII.GetString(md5data);
+
+            doctor.User.Password = hashedPassword;
             _repository.Add(doctor);
         }
 
@@ -43,7 +52,7 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new DoctorNotFoundException($"Doctor with id {doctorId} not found");
             }
-            if(!doctor.IsActive)
+            if (!doctor.IsActive)
             {
                 throw new Exception($"doctor with id {doctor.Id} is not active");
             }
@@ -52,11 +61,25 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             _repository.Update(doctor);
 
             var appointments = _appointmentRepository.GetAll().Where(x => x.DoctorId == doctorId);
+           
             foreach (var appointment in appointments)
             {
-                if (appointment.DateTime > DateTime.UtcNow)
+                if (!appointment.Doctor.IsActive)
                 {
-                    _appointmentRepository.Delete(appointment);
+                    appointment.Status = true;
+                    _appointmentRepository.Update(appointment);
+                }
+                
+                if (!appointment.Doctor.IsActive && appointment.PatientId != null)
+                {
+                    var newAppointment = new Appointments
+                    {
+                        Status = true,
+                        DateTime = appointment.DateTime,
+                        PatientId = appointment.PatientId,
+                        DoctorId = 2
+                    };
+                    _appointmentRepository.Add(newAppointment);
                 }
             }
         }
@@ -74,7 +97,7 @@ namespace HospitalManagementSystem.Services.Services.Implementation
                 throw new DoctorNotFoundException("no doctors have been added yet");
             }
 
-            return doctors.Select(x => x.ToDoctorDto()).ToList();
+            return _mapper.Map<List<GetDoctorDto>>(doctors);
         }
 
         public List<GetDoctorDto> GetAllDoctorsBySpecialization(int userId, string specialization)
@@ -90,7 +113,8 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new DoctorNotFoundException("a doctor with that specialization was not found");
             }
-            return doctors.Select(x => x.ToDoctorDto()).ToList();
+
+            return _mapper.Map<List<GetDoctorDto>>(doctors);
         }
 
         public GetDoctorDto GetDoctorById(int userId, int doctorId)
@@ -109,7 +133,8 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new Exception($"doctor with id {doctor.Id} is not active");
             }
-            return doctor.ToDoctorDto();
+
+            return _mapper.Map<GetDoctorDto>(doctor);
         }
 
         public void UpdateDoctor(DoctorDto doctorDto, int userId)
@@ -139,7 +164,6 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             _userRepository.Update(user);
             _repository.Update(doctor);
         }
-
 
         private void ValidateDoctor(DoctorDto doctorDto)
         {

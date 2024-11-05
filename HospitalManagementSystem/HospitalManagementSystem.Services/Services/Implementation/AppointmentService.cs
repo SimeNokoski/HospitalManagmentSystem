@@ -1,8 +1,9 @@
-﻿using HospitalManagementSystem.DataAccess.Interfaces;
+﻿using AutoMapper;
+using HospitalManagementSystem.DataAccess.Interfaces;
+using HospitalManagementSystem.Domain.Models;
 using HospitalManagementSystem.DTO.AppointmentsDtos;
 using HospitalManagementSystem.Services.Services.Interfaces;
 using HospitalManagementSystem.Shared;
-using HospitaManagmentSystem.Mapper;
 
 namespace HospitalManagementSystem.Services.Services.Implementation
 {
@@ -11,12 +12,14 @@ namespace HospitalManagementSystem.Services.Services.Implementation
         private readonly IAppointmentRepository _appointmentsRepository;
         private readonly IPatientsRepository _patientsRepository;
         private readonly IDoctorRepository _doctorRepository;
+        private readonly IMapper _mapper;
 
-        public AppointmentService(IAppointmentRepository appointmentsRepository, IPatientsRepository patientsRepository, IDoctorRepository doctorRepository)
+        public AppointmentService(IAppointmentRepository appointmentsRepository, IPatientsRepository patientsRepository, IDoctorRepository doctorRepository, IMapper mapper)
         {
             _appointmentsRepository = appointmentsRepository;
             _patientsRepository = patientsRepository;
             _doctorRepository = doctorRepository;
+            _mapper = mapper;
         }
 
         public void AddAvailableAppointment(CreateAppointmentDto createAppointmentDto, int userId)
@@ -36,7 +39,7 @@ namespace HospitalManagementSystem.Services.Services.Implementation
                 throw new InvalidDataException("There is already an appointment at the specified time");
             }
 
-            var appointment = createAppointmentDto.ToAppoinment();
+            var appointment = _mapper.Map<Appointments>(createAppointmentDto);
             appointment.DoctorId = doctor.Id;
             _appointmentsRepository.Add(appointment);
         }
@@ -55,7 +58,7 @@ namespace HospitalManagementSystem.Services.Services.Implementation
                 throw new PatientNotFoundException($"No patients found for doctor with id {doctor.Id}");
             }
 
-            return patients.Select(x => x.Patient.ToAllPatientDto()).ToList();
+            return _mapper.Map<List<AllPatientByDtoctorIdDto>>(patients);
         }
 
         public List<GetAppointmentsByDoctorId> AvailableAppointmentsByDoctorId(int doctorId)
@@ -65,13 +68,13 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new DoctorNotFoundException($"Doctor wih id {doctorId} not found");
             }
-            var appointmets = _appointmentsRepository.GetAll().Where(x => !x.Status && x.PatientId == null && x.DoctorId == doctor.Id).ToList();
+            var appointmets = _appointmentsRepository.GetAll().Where(x => !x.Status && x.DoctorId == doctor.Id && x.DateTime > DateTime.UtcNow).ToList();
             if (!appointmets.Any())
             {
                 throw new AppointmentNotFoundException($"No available appointments found for doctor with id {doctor.Id}");
             }
 
-            return appointmets.Select(x => x.ToAppointmentDto()).ToList();
+            return _mapper.Map<List<GetAppointmentsByDoctorId>>(appointmets);
         }
 
         public void BookAppointment(BookCancelAppointmentDto bookAppointmentDto, int userId)
@@ -115,7 +118,6 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             appointment.Status = false;
             appointment.PatientId = null;
             _appointmentsRepository.Update(appointment);
-
         }
 
         public List<GetAppointmentsByDoctorId> GetAppointmentsByDoctorId(int userId)
@@ -130,7 +132,7 @@ namespace HospitalManagementSystem.Services.Services.Implementation
             {
                 throw new AppointmentNotFoundException($"No appointments found for doctor with id {doctor.Id}");
             }
-            return appointments.Select(x => x.ToAppointmentDto()).ToList();
+            return _mapper.Map<List<GetAppointmentsByDoctorId>>(appointments);
         }
 
         public void RemoveAppointment(int id, int userId)
